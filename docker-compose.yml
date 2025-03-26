@@ -1,0 +1,23 @@
+services:
+  db_new:
+    image: mysql
+    volumes:
+      - ./db_data_new:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 23252910
+      MYSQL_DATABASE: db_new
+      MYSQL_PASSWORD: 23252910
+    ports:
+      - "3307:3306" # Cambié el puerto de MySQL a 3307
+
+  phpmyadmin_new:
+    depends_on:
+      - db_new
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - "8091:80" # Cambié el puerto de phpMyAdmin a 8091
+    environment:
+      PMA_HOST: db_new
+      MYSQL_ROOT_PASSWORD: 23252910
