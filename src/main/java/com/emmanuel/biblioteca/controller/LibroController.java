@@ -1,7 +1,9 @@
 package com.emmanuel.biblioteca.controller;
 
+import com.emmanuel.biblioteca.entity.CopiaLibro;
 import com.emmanuel.biblioteca.entity.Libro;
 import com.emmanuel.biblioteca.entity.Resena;
+import com.emmanuel.biblioteca.service.CopiaLibroService;
 import com.emmanuel.biblioteca.service.LibroService;
 import com.emmanuel.biblioteca.service.ResenaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,10 +17,12 @@ import java.util.List;
 public class LibroController {
     private final LibroService libroService;
     private final ResenaService resenaService;
+    private final CopiaLibroService copiaLibroService;
 
-    public LibroController(LibroService libroService, ResenaService resenaService) {
+    public LibroController(LibroService libroService, ResenaService resenaService, CopiaLibroService copiaLibroService) {
         this.libroService = libroService;
         this.resenaService = resenaService;
+        this.copiaLibroService = copiaLibroService;
     }
 
     @GetMapping
@@ -41,5 +45,11 @@ public class LibroController {
             @PathVariable("libroId") Integer libroId,
             @PathVariable("resenaId") Integer resenaId) {
         return ResponseEntity.ok(resenaService.getResenaLibroById(resenaId, libroId));
+    }
+
+
+    @GetMapping("/{libroId}/copias-disponibles")
+    public List<CopiaLibro> getCopiasDisponibles(@PathVariable Integer libroId) {
+        return copiaLibroService.getCopiasDisponiblesByLibroId(libroId);
     }
 }

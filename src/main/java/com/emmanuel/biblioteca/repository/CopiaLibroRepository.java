@@ -12,4 +12,5 @@ public interface CopiaLibroRepository extends JpaRepository<CopiaLibro, Integer>
     @Query("SELECT c FROM CopiaLibro c WHERE c.disponible = true")
     List<CopiaLibro> findLibrosDisponibles();
 
+    List<CopiaLibro> findByLibroIdAndDisponible(Integer libroId, boolean disponible);
 }

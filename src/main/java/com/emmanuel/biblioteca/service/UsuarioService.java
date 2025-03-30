@@ -23,10 +23,6 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
 
-    public Usuario getUsuarioByUsername(String username) {
-        return usuarioRepository.findByUsername(username);
-    }
-
     public Usuario getUsuarioById(Integer usuarioId) {
         try {
             Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -39,6 +35,18 @@ public class UsuarioService {
             throw new RuntimeException("Error al obtener el usuario con ID: " + usuarioId, e);
         }
     }
+
+    public Usuario getUsuarioByUsername(String username) {
+        try {
+            Usuario usuario = usuarioRepository.findByUsername(username);
+            Hibernate.initialize(usuario.getResenas());
+            Hibernate.initialize(usuario.getPrestamos());
+            return usuario;
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Error al obtener el usuario con username: " + username, e);
+        }
+    }
+
 
     public Usuario saveOrUpdate(Integer usuarioId, Usuario usuario) {
         if (usuario == null || usuario.getUsername() == null || usuario.getUsername().isEmpty()) {
@@ -53,6 +61,7 @@ public class UsuarioService {
             // Actualizar solo los campos permitidos
             usuarioExistente.setUsername(usuario.getUsername());
             usuarioExistente.setCorreo(usuario.getCorreo());
+            usuarioExistente.setTelefono(usuario.getTelefono());
 
             try {
                 return usuarioRepository.save(usuarioExistente);

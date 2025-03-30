@@ -48,7 +48,6 @@ public class LibroService {
         }
 
         if (libroId != null) {
-            // 🟢 Actualizar un libro existente
             Libro libroExistente = libroRepository.findById(libroId)
                     .orElseThrow(() -> new ResourceNotFoundException("El libro con ID " + libroId + " no existe"));
 
@@ -56,18 +55,15 @@ public class LibroService {
                 throw new UnauthorizedAccessException("El libro con ID " + libroId + " no pertenece al usuario con ID " + usuarioId);
             }
 
-            // 📌 Actualizar solo los campos permitidos
             libroExistente.setTitulo(libro.getTitulo());
             libroExistente.setGenero(libro.getGenero());
 
-            // 📌 Si el usuario subió una nueva imagen, la actualizamos
             if (libro.getImagenUrl() != null && !libro.getImagenUrl().isBlank()) {
                 libroExistente.setImagenUrl(libro.getImagenUrl());
             }
 
             return libroRepository.save(libroExistente);
         } else {
-            // 🟢 Crear un libro nuevo
             if (libro.getImagenUrl() == null || libro.getImagenUrl().isBlank()) {
                 throw new InvalidRequestException("El libro debe tener una imagen.");
             }

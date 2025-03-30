@@ -47,13 +47,6 @@ public class DataLoader {
                 CopiaLibro copiaLibro3 = new CopiaLibro(libro3);
                 copiaLibroRepository.saveAll(List.of(copiaLibro1, copiaLibro2, copiaLibro3));
 
-                // Crear préstamos
-                LocalDate fechaInicio = LocalDate.now();
-                LocalDate fechaVencimiento = fechaInicio.plusWeeks(2);
-                Prestamo prestamo1 = new Prestamo(usuario1, copiaLibro1, fechaInicio, fechaVencimiento, null, false);
-                Prestamo prestamo2 = new Prestamo(usuario2, copiaLibro2, fechaInicio, fechaVencimiento, null, false);
-                Prestamo prestamo3 = new Prestamo(usuario3, copiaLibro3, fechaInicio, fechaVencimiento, null, false);
-                prestamoRepository.saveAll(List.of(prestamo1, prestamo2, prestamo3));
 
                 System.out.println("Datos falsos insertados correctamente.");
             }
