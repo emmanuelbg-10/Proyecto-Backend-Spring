@@ -93,8 +93,7 @@ class ResenaServiceTest {
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
         when(resenaRepository.save(any(Resena.class))).thenReturn(resena);
 
-        Resena resultado = resenaService.saveOrUpdateResena(1, 1, resena);
-        assertNotNull(resultado);
+        Resena resultado = resenaService.saveOrUpdateResena(1, 1, 1, resena);        assertNotNull(resultado);
         verify(resenaRepository, times(1)).save(resena);
     }
 

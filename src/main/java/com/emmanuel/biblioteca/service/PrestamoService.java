@@ -7,6 +7,8 @@ import com.emmanuel.biblioteca.repository.PrestamoRepository;
 import com.emmanuel.biblioteca.repository.CopiaLibroRepository;
 import com.emmanuel.biblioteca.repository.PrestamoRepositoryCustom;
 import com.emmanuel.biblioteca.repository.UsuarioRepository;
+import com.emmanuel.biblioteca.exception.ResourceNotFoundException;
+import com.emmanuel.biblioteca.exception.InvalidRequestException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -34,15 +36,15 @@ public class PrestamoService {
 
     public Prestamo getPrestamoById(Integer id) {
         return prestamoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No se encontró el préstamo con ID " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el préstamo con ID " + id));
     }
 
     public void deletePrestamo(Integer usuarioId, Integer prestamoId) {
         Prestamo prestamo = prestamoRepository.findById(prestamoId)
-                .orElseThrow(() -> new RuntimeException("Préstamo no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Préstamo no encontrado"));
 
         if (!prestamo.getUsuario().getId().equals(usuarioId)) {
-            throw new RuntimeException("El préstamo no pertenece a este usuario");
+            throw new InvalidRequestException("El préstamo no pertenece a este usuario");
         }
 
         prestamoRepository.delete(prestamo);
@@ -50,16 +52,16 @@ public class PrestamoService {
 
     public List<Prestamo> getPrestamosByUsuario(Integer usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         return prestamoRepository.findByUsuario(usuario);
     }
 
     public Prestamo getPrestamoByUsuario(Integer usuarioId, Integer prestamoId) {
         Prestamo prestamo = prestamoRepository.findById(prestamoId)
-                .orElseThrow(() -> new RuntimeException("Préstamo no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Préstamo no encontrado"));
 
         if (!prestamo.getUsuario().getId().equals(usuarioId)) {
-            throw new RuntimeException("El préstamo no pertenece a este usuario");
+            throw new InvalidRequestException("El préstamo no pertenece a este usuario");
         }
 
         return prestamo;
@@ -68,14 +70,14 @@ public class PrestamoService {
     @Transactional
     public List<Object[]> getUsuariosConMasPrestamosUltimoAnio(int maxResultados) {
         if (maxResultados <= 0) {
-            throw new IllegalArgumentException("El número de resultados debe ser mayor a 0");
+            throw new InvalidRequestException("El número de resultados debe ser mayor a 0");
         }
 
         try {
             List<Object[]> resultado = prestamoRepositoryCustom.getUsuariosConMasPrestamosUltimoAnio(maxResultados);
 
             if (resultado.isEmpty()) {
-                throw new RuntimeException("No se encontraron usuarios con préstamos en el último año");
+                throw new ResourceNotFoundException("No se encontraron usuarios con préstamos en el último año");
             }
 
             return resultado;
@@ -86,14 +88,14 @@ public class PrestamoService {
 
     public Prestamo createPrestamo(Integer usuarioId, Integer copiaLibroId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         CopiaLibro copiaLibro = copiaLibroRepository.findById(copiaLibroId)
-                .orElseThrow(() -> new RuntimeException("Copia del libro no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Copia del libro no encontrada"));
 
         // Verificar si la copia ya está prestada
         boolean copiaPrestada = prestamoRepository.existsByCopiaLibroAndDevueltoFalse(copiaLibro);
         if (copiaPrestada) {
-            throw new RuntimeException("Esta copia del libro ya está prestada");
+            throw new InvalidRequestException("Esta copia del libro ya está prestada");
         }
 
         LocalDate fechaInicio = LocalDate.now();

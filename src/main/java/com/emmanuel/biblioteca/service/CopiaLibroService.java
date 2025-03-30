@@ -4,6 +4,8 @@ import com.emmanuel.biblioteca.entity.CopiaLibro;
 import com.emmanuel.biblioteca.entity.Libro;
 import com.emmanuel.biblioteca.repository.CopiaLibroRepository;
 import com.emmanuel.biblioteca.repository.LibroRepository;
+import com.emmanuel.biblioteca.exception.ResourceNotFoundException;
+
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -23,7 +25,7 @@ public class CopiaLibroService {
 
     public CopiaLibro getCopiaLibroById(Integer id) {
         return copiaLibroRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Copia de libro no encontrada con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Copia de libro no encontrada con ID: " + id));
     }
 
     public void deleteCopiaLibroById(Integer id) {
@@ -33,7 +35,7 @@ public class CopiaLibroService {
 
     public CopiaLibro saveOrUpdateCopiaLibro(Integer libroId) {
         Libro libro = libroRepository.findById(libroId)
-                .orElseThrow(() -> new RuntimeException("Libro no encontrado con ID: " + libroId));
+                .orElseThrow(() -> new ResourceNotFoundException("Libro no encontrado con ID: " + libroId));
 
         CopiaLibro nuevaCopia = new CopiaLibro(libro); // Siempre se crea una nueva copia
         return copiaLibroRepository.save(nuevaCopia);
@@ -44,12 +46,12 @@ public class CopiaLibroService {
             List<CopiaLibro> disponibles = copiaLibroRepository.findLibrosDisponibles();
 
             if (disponibles.isEmpty()) {
-                throw new RuntimeException("No hay libros disponibles en este momento");
+                throw new ResourceNotFoundException("No hay libros disponibles en este momento");
             }
 
             return disponibles;
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener libros disponibles: " + e.getMessage());
+            throw new ResourceNotFoundException("Error al obtener libros disponibles: " + e.getMessage());
         }
     }
 }

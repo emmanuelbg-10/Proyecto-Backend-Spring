@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface LibroRepository extends JpaRepository<Libro, Integer> {
-    List<Libro> findByAutorId(Integer autorId);
-    Optional<Libro> findByIdAndAutorId(Integer libroId, Integer autorId);
+    List<Libro> findByUsuarioId(Integer autorId);
+    Optional<Libro> findByIdAndUsuarioId(Integer libroId, Integer autorId);
 }

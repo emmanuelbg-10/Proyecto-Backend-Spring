@@ -33,11 +33,11 @@ class UsuarioServiceTest {
     void setUp() {
         usuario1 = new Usuario();
         usuario1.setId(1);
-        usuario1.setNombre("Juan Perez");
+        usuario1.setUsername("Juan Perez");
 
         usuario2 = new Usuario();
         usuario2.setId(2);
-        usuario2.setNombre("Maria Gomez");
+        usuario2.setUsername("Maria Gomez");
     }
 
     @Test
@@ -49,7 +49,7 @@ class UsuarioServiceTest {
 
         assertNotNull(resultado);
         assertEquals(2, resultado.size());
-        assertEquals("Juan Perez", resultado.get(0).getNombre());
+        assertEquals("Juan Perez", resultado.get(0).getUsername());
 
         verify(usuarioRepository, times(1)).findAll();
     }
@@ -70,7 +70,7 @@ class UsuarioServiceTest {
         Usuario resultado = usuarioService.getUsuarioById(1);
 
         assertNotNull(resultado);
-        assertEquals("Juan Perez", resultado.getNombre());
+        assertEquals("Juan Perez", resultado.getUsername());
 
         verify(usuarioRepository, times(1)).findById(1);
     }
@@ -89,10 +89,10 @@ class UsuarioServiceTest {
     void testSaveOrUpdate() {
         when(usuarioRepository.save(usuario1)).thenReturn(usuario1);
 
-        Usuario resultado = usuarioService.saveOrUpdate(usuario1);
+        Usuario resultado = usuarioService.saveOrUpdate(usuario1.getId(), usuario1);
 
         assertNotNull(resultado);
-        assertEquals("Juan Perez", resultado.getNombre());
+        assertEquals("Juan Perez", resultado.getUsername());
 
         verify(usuarioRepository, times(1)).save(usuario1);
     }
@@ -101,8 +101,7 @@ class UsuarioServiceTest {
     void testSaveOrUpdate_DataAccessException() {
         when(usuarioRepository.save(usuario1)).thenThrow(new DataAccessException("Error de BD") {});
 
-        Exception exception = assertThrows(RuntimeException.class, () -> usuarioService.saveOrUpdate(usuario1));
-
+        Exception exception = assertThrows(RuntimeException.class, () -> usuarioService.saveOrUpdate(usuario1.getId(), usuario1));
         assertEquals("Error al guardar o actualizar el usuario", exception.getMessage());
         verify(usuarioRepository, times(1)).save(usuario1);
     }

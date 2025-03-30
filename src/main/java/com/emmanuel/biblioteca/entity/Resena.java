@@ -11,13 +11,11 @@ public class Resena {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull(message = "El usuario no puede ser nulo")
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     @JsonBackReference("usuario-resena")
     private Usuario usuario;
 
-    @NotNull(message = "El libro no puede ser nulo")
     @ManyToOne
     @JoinColumn(name = "libro_id", nullable = false)
     @JsonBackReference("libro-resena")

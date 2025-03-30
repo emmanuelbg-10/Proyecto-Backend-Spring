@@ -60,8 +60,13 @@ public class Prestamo {
         this.copiaLibro = copiaLibro;
         this.fechaInicio = fechaInicio;
         this.fechaVencimiento = fechaVencimiento;
-        this.fechaDevolucion = fechaDevolucion != null ? fechaDevolucion : null;
+        this.fechaDevolucion = fechaDevolucion;
         this.devuelto = devuelto;
+    }
+
+    public Prestamo(Usuario usuario, CopiaLibro copiaLibro) {
+        this.usuario = usuario;
+        this.copiaLibro = copiaLibro;
     }
 
     public Integer getId() {

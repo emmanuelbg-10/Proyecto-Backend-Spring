@@ -1,32 +1,38 @@
 package com.emmanuel.biblioteca.controller;
 
+import com.emmanuel.biblioteca.entity.Libro;
 import com.emmanuel.biblioteca.entity.Prestamo;
 import com.emmanuel.biblioteca.entity.Resena;
 import com.emmanuel.biblioteca.entity.Usuario;
-import com.emmanuel.biblioteca.service.PrestamoService;
-import com.emmanuel.biblioteca.service.ResenaService;
-import com.emmanuel.biblioteca.service.UsuarioService;
+import com.emmanuel.biblioteca.service.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "api/v1/usuarios")
-@Tag(name = "Usuarios", description = "Gestión de usuarios, sus resenas y sus prestamos")
+@Tag(name = "Usuarios", description = "Gestión de usuarios, libros, reseñas y préstamos")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final LibroService libroService;
     private final ResenaService resenaService;
     private final PrestamoService prestamoService;
+    private final CloudinaryService cloudinaryService;
 
-    public UsuarioController(UsuarioService usuarioService, ResenaService resenaService, PrestamoService prestamoService) {
+    public UsuarioController(UsuarioService usuarioService, LibroService libroService, ResenaService resenaService,
+                             PrestamoService prestamoService, CloudinaryService cloudinaryService) {
         this.usuarioService = usuarioService;
+        this.libroService = libroService;
         this.resenaService = resenaService;
         this.prestamoService = prestamoService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @GetMapping
@@ -35,18 +41,96 @@ public class UsuarioController {
     }
 
     @GetMapping("/{usuarioId}")
-    public ResponseEntity<Usuario> getById(@PathVariable("usuarioId") Integer usuarioId) {
+    public ResponseEntity<Usuario> getById(@PathVariable Integer usuarioId) {
         return ResponseEntity.ok(usuarioService.getUsuarioById(usuarioId));
     }
 
     @PostMapping
     public ResponseEntity<Usuario> saveUpdate(@Valid @RequestBody Usuario usuario) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.saveOrUpdate(usuario));
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.saveOrUpdate(null, usuario));
+    }
+
+    @PutMapping("/{usuarioId}")
+    public ResponseEntity<Usuario> saveUpdate(@PathVariable Integer usuarioId, @Valid @RequestBody Usuario usuario) {
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.saveOrUpdate(usuarioId, usuario));
     }
 
     @DeleteMapping("/{usuarioId}")
-    public ResponseEntity<Void> deleteUsuario(@PathVariable("usuarioId") Integer usuarioId) {
+    public ResponseEntity<Void> deleteUsuario(@PathVariable Integer usuarioId) {
         usuarioService.deleteUsuarioById(usuarioId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Gestión de libros por usuario
+    @GetMapping("/{usuarioId}/libros")
+    public ResponseEntity<List<Libro>> getLibrosByUsuario(@PathVariable Integer usuarioId) {
+        return ResponseEntity.ok(libroService.getLibrosByUsuario(usuarioId));
+    }
+
+    // Obtener un libro específico de un autor (200 OK o excepción manejada)
+    @GetMapping("/{usuarioId}/libros/{libroId}")
+    public ResponseEntity<Libro> getLibroAutor(
+            @PathVariable("usuarioId") Integer usuarioId,
+            @PathVariable("libroId") Integer libroId) {
+        Libro libro = libroService.getLibroUsuarioById(libroId, usuarioId);
+        return ResponseEntity.ok(libro);
+    }
+
+    @PostMapping("/{usuarioId}/libros")
+    public ResponseEntity<Libro> saveLibro(
+            @PathVariable Integer usuarioId,
+            @RequestParam("titulo") String titulo,
+            @RequestParam("genero") String genero,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+        try {
+            // Verifica si el usuario tiene rol de AUTOR
+            Usuario usuario = usuarioService.getUsuarioById(usuarioId);
+            if (!"AUTOR".equals(usuario.getRol())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            }
+
+            // Sube la imagen si se proporciona
+            String imageUrl = (file != null && !file.isEmpty()) ? cloudinaryService.uploadImage(file) : null;
+            // Crea el libro con los datos proporcionados
+            Libro libro = new Libro(titulo, genero, usuario, imageUrl);
+            // Guarda el libro y devuelve la respuesta
+            return ResponseEntity.status(HttpStatus.CREATED).body(libroService.saveOrUpdateLibro(usuarioId, null, libro));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @PutMapping("/{usuarioId}/libros/{libroId}")
+    public ResponseEntity<Libro> updateLibro(
+            @PathVariable Integer usuarioId,
+            @PathVariable Integer libroId,
+            @RequestParam("titulo") String titulo,
+            @RequestParam("genero") String genero,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+        try {
+            // Verifica si el usuario tiene rol de AUTOR
+            Usuario usuario = usuarioService.getUsuarioById(usuarioId);
+            if (!"AUTOR".equals(usuario.getRol())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            }
+
+            // Si hay un archivo, se sube la nueva imagen; si no, se mantiene la imagen anterior
+            String imageUrl = (file != null && !file.isEmpty()) ? cloudinaryService.uploadImage(file) : null;
+
+            // Crea el libro con los datos proporcionados
+            Libro libro = new Libro(titulo, genero, usuario, imageUrl);
+            // Actualiza el libro con el ID proporcionado
+            return ResponseEntity.ok(libroService.saveOrUpdateLibro(usuarioId, libroId, libro));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+
+
+    @DeleteMapping("/{usuarioId}/libros/{libroId}")
+    public ResponseEntity<Void> deleteLibro(@PathVariable Integer usuarioId, @PathVariable Integer libroId) {
+        libroService.deleteLibro(libroId, usuarioId);
         return ResponseEntity.noContent().build();
     }
 
@@ -63,11 +147,25 @@ public class UsuarioController {
     }
 
     @PostMapping("/{usuarioId}/libros/{libroId}/resenas")
-    public ResponseEntity<Resena> saveOrUpdateResena(@Valid @PathVariable Integer usuarioId,
-                                                     @PathVariable Integer libroId,
-                                                     @RequestBody Resena resena) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(resenaService.saveOrUpdateResena(usuarioId, libroId, resena));
+    public ResponseEntity<Resena> saveResena(
+            @PathVariable Integer usuarioId,
+            @PathVariable Integer libroId,
+            @Valid @RequestBody Resena resena) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(resenaService.saveOrUpdateResena(usuarioId, libroId, null, resena));
     }
+
+    @PutMapping("/{usuarioId}/libros/{libroId}/resenas/{resenaId}")
+    public ResponseEntity<Resena> updateResena(
+            @PathVariable Integer usuarioId,
+            @PathVariable Integer libroId,
+            @PathVariable Integer resenaId,
+            @Valid @RequestBody Resena resena) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(resenaService.saveOrUpdateResena(usuarioId, libroId, resenaId, resena));
+    }
+
+
 
     @DeleteMapping("/{usuarioId}/libros/{libroId}/resenas/{resenaId}")
     public ResponseEntity<Void> deleteResena(@PathVariable Integer usuarioId,

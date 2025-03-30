@@ -1,4 +1,4 @@
-package com.emmanuelbg10.apirest.security;
+package com.emmanuel.biblioteca.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.Map;
 
 @Service
 public class JwtService {
@@ -19,10 +18,10 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String username) {
+    public String generateToken(Integer id, String role) {
         return Jwts.builder()
-                .setClaims(Map.of("dato1", "valor1"))
-                .setSubject(username)
+                .setSubject(String.valueOf(id))
+                .claim("role", role)                
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // Expira en 1 día
                 .signWith(getSigningKey())

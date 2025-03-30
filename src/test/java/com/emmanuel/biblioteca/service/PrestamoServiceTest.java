@@ -47,7 +47,7 @@ class PrestamoServiceTest {
     void setUp() {
         usuario = new Usuario();
         usuario.setId(1);
-        usuario.setNombre("Juan Perez");
+        usuario.setUsername("Juan Perez");
 
         copiaLibro = new CopiaLibro();
         copiaLibro.setId(1);

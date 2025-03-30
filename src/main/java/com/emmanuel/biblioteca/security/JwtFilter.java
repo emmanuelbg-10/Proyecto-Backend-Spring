@@ -1,4 +1,4 @@
-package com.emmanuelbg10.apirest.security;
+package com.emmanuel.biblioteca.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,8 +8,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.stereotype.Component; // Añadido para registrar como bean
 
 import java.io.IOException;
 import java.util.Collections;
@@ -35,12 +35,10 @@ public class JwtFilter extends OncePerRequestFilter {
             if (jwtService.validateToken(token)) {
                 String username = jwtService.getUsernameFromToken(token);
 
-                // Crea un objeto de autenticación con el nombre de usuario
                 User userDetails = new User(username, "", Collections.emptyList());
                 var authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // Establece la autenticación en el contexto de seguridad de Spring
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

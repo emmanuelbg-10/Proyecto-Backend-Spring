@@ -1,7 +1,8 @@
-package com.emmanuelbg10.apirest.security;
+package com.emmanuel.biblioteca.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -31,9 +32,23 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable) // Deshabilita CSRF
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Sin sesión, usaremos JWT
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/login").permitAll() // Permite el acceso al login sin autenticación
-                        .anyRequest().authenticated() // El resto de las solicitudes requieren autenticación
+                .authorizeHttpRequests(authorize -> authorize
+                        // Restringe POST y PUT para /api/v1/usuarios/*/libros
+                        .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/*/libros").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/usuarios/*/libros").authenticated()
+
+                        // Restringe PUT para /api/v1/usuarios/*
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/usuarios/*").authenticated()
+
+                        // Restringe POST y PUT para /api/v1/usuarios/*/libros/*/resenas
+                        .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/*/libros/*/resenas").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/usuarios/*/libros/*/resenas").authenticated()
+
+                        // Restringe POST para /api/v1/usuarios/*/prestamos/*
+                        .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/*/prestamos/*").authenticated()
+
+                        // Permite todas las demás solicitudes
+                        .anyRequest().permitAll()
                 )
                 .cors(withDefaults()) // Habilita CORS con la configuración por defecto
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // Añade el filtro JWT

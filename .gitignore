@@ -1,4 +1,6 @@
 db_data_new/
+src/main/resources/application.properties
+src/main/java/res
 *.sock
 
 HELP.md

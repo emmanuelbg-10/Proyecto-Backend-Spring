@@ -13,19 +13,26 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "El nombre no puede estar vacío")
     @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
-    @Column(name = "nombre", nullable = false)
-    private String nombre;
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
 
-    @NotNull(message = "El correo no puede ser nulo")
     @Email(message = "Debe proporcionar un correo electrónico válido")
     @Column(unique = true, nullable = false)
     private String correo;
 
+    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    @Column(nullable = false)
+    private String password;
+
     @Digits(integer = 9, fraction = 0, message = "El teléfono debe contener hasta 9 dígitos")
     @Column(unique = true, nullable = false)
     private Long telefono;
+
+    @NotBlank(message = "El rol no puede estar vacío")
+    @Pattern(regexp = "^(USUARIO|AUTOR)$", message = "El rol debe ser USUARIO o AUTOR")
+    @Column(nullable = false)
+    private String rol;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -35,12 +42,18 @@ public class Usuario {
     @JsonIgnore
     private List<Prestamo> prestamos;
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Libro> libros;
+
     public Usuario() {}
 
-    public Usuario(String nombre, String correo, Long telefono) {
-        this.nombre = nombre;
+    public Usuario(String username, String correo, String password, Long telefono, String rol) {
+        this.username = username;
         this.correo = correo;
+        this.password = password;
         this.telefono = telefono;
+        this.rol = rol;
     }
 
     public Integer getId() {
@@ -51,12 +64,12 @@ public class Usuario {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getUsername() {
+        return username;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getCorreo() {
@@ -67,12 +80,28 @@ public class Usuario {
         this.correo = correo;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public Long getTelefono() {
         return telefono;
     }
 
     public void setTelefono(Long telefono) {
         this.telefono = telefono;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 
     public List<Resena> getResenas() {
@@ -91,15 +120,22 @@ public class Usuario {
         this.prestamos = prestamos;
     }
 
+    public List<Libro> getLibros() {
+        return libros;
+    }
+
+    public void setLibros(List<Libro> libros) {
+        this.libros = libros;
+    }
+
     @Override
     public String toString() {
         return "Usuario{" +
                 "id=" + id +
-                ", nombre='" + nombre + '\'' +
+                ", nombre='" + username + '\'' +
                 ", correo='" + correo + '\'' +
                 ", telefono=" + telefono +
-                ", resenas=" + resenas +
-                ", prestamos=" + prestamos +
+                ", rol='" + rol + '\'' +
                 '}';
     }
 }

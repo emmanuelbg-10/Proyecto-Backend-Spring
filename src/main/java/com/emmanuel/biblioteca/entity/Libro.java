@@ -1,6 +1,5 @@
 package com.emmanuel.biblioteca.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -25,15 +24,12 @@ public class Libro {
     @Column(nullable = false)
     private String genero;
 
-    @NotBlank(message = "El código único no puede estar vacío")
-    @Size(min = 5, max = 50, message = "El código único debe tener entre 5 y 50 caracteres")
-    @Pattern(regexp = "^[a-zA-Z0-9\\-]+$", message = "El código único solo puede contener letras, números y guiones")
-    @Column(name = "codigo_unico", unique = true, nullable = false)
-    private String codigoUnico;
+    @Column(columnDefinition = "LONGTEXT", nullable = true)
+    private String imagenUrl;
 
     @ManyToOne
-    @JoinColumn(name = "autor_id", nullable = false)
-    private Autor autor;
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
     @OneToMany(mappedBy = "libro", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -45,11 +41,17 @@ public class Libro {
 
     public Libro() {}
 
-    public Libro(String titulo, String genero, String codigoUnico, Autor autor) {
+    public Libro(String titulo, String genero, Usuario usuario, String imagenUrl) {
         this.titulo = titulo;
         this.genero = genero;
-        this.codigoUnico = codigoUnico;
-        this.autor = autor;
+        this.usuario = usuario;
+        this.imagenUrl = imagenUrl;
+    }
+
+    public Libro(String titulo, String genero, Usuario usuario) {
+        this.titulo = titulo;
+        this.genero = genero;
+        this.usuario = usuario;
     }
 
     public Integer getId() {
@@ -76,20 +78,20 @@ public class Libro {
         this.genero = genero;
     }
 
-    public String getCodigoUnico() {
-        return codigoUnico;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setCodigoUnico(String codigoUnico) {
-        this.codigoUnico = codigoUnico;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
-    public Autor getAutor() {
-        return autor;
+    public String getImagenUrl() {
+        return imagenUrl;
     }
 
-    public void setAutor(Autor autor) {
-        this.autor = autor;
+    public void setImagenUrl(String imagenUrl) {
+        this.imagenUrl = imagenUrl;
     }
 
     public List<CopiaLibro> getCopiaLibros() {
@@ -114,8 +116,7 @@ public class Libro {
                 "id=" + id +
                 ", titulo='" + titulo + '\'' +
                 ", genero='" + genero + '\'' +
-                ", codigoUnico='" + codigoUnico + '\'' +
-                ", autor=" + autor +
+                ", autor=" + usuario +
                 ", copiaLibros=" + copiaLibros +
                 ", resenas=" + resenas +
                 '}';

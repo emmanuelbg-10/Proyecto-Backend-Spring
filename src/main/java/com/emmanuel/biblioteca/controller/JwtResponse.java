@@ -1,4 +1,4 @@
-package com.emmanuelbg10.apirest.controller;
+package com.emmanuel.biblioteca.controller;
 
 class JwtResponse {
     private String token;

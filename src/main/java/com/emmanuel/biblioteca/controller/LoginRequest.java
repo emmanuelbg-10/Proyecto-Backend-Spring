@@ -1,8 +1,10 @@
-package com.emmanuelbg10.apirest.controller;
+package com.emmanuel.biblioteca.controller;
 
-class LoginRequest {
+public class LoginRequest {
     private String username;
     private String password;
+
+    // Getters y setters
 
     public String getUsername() {
         return username;
